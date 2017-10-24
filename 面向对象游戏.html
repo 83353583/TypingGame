@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            height: 100%;
+            overflow: hidden;
+            background-image: url("./images/bg.png");
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+        }
+
+        .sence {
+            width: 80%;
+            height: 100%;
+            float: left;
+            position: relative;
+
+        }
+
+        .control {
+            width: 20%;
+            height: 100%;
+            float: left;
+            background-color: rgba(0, 0, 0, 0.43);
+        }
+
+        .letter {
+            width: 100px;
+            height: 100px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            cursor: default;
+        }
+
+        .blank {
+            width: 100%;
+            line-height: 40px;
+            font-size: 30px;
+            text-align: center;
+            padding: 40px 0;
+
+        }
+
+        .blank span {
+            border: 1px solid black;
+            display: inline-block;
+            width: 100px;
+        }
+
+        .control>input {
+            display: block;
+            margin: 30px auto;
+            width: 100px;
+            height: 40px;
+            border-radius: 20px;
+            outline:none;
+        }
+        .diff{
+            width: 100%;
+            display: flex;
+            justify-content: space-evenly;
+        }
+        .diff input{
+            border-radius: 5px;
+            outline:none;
+        }
+        .selected{
+            background-color: #4a4a4a;
+            outline: none;
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="sence"></div>
+    <div class="control">
+        <div class="score blank">得分 <span>0</span></div>
+        <div class="level blank">关卡 <span>1</span></div>
+        <div class="life blank">生命 <span>3</span></div>
+        <input type="button" value="开始" id="start">
+        <input type="button" value="暂停" id="pause">
+        <input type="button" value="结束" id="over">
+        <div class="diff">
+            <input type="button" value="easy" name="easy" class="selected diffbtn">
+            <input type="button" value="medium" name="medium" class="diffbtn">
+            <input type="button" value="hard" name="hard" class="diffbtn">
+            <input type="button" value="hell" name="hell" class="diffbtn">
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    class Game {
+        constructor(setting) {
+            this.sence = document.querySelector(".sence");
+            this.scoreEle = document.querySelector(".score span");
+            this.levelEle = document.querySelector(".level span");
+            this.senceWidth = this.sence.offsetWidth;
+            this.speed = setting.speed || 4;
+            this.t = setInterval(this._move, 50);
+            this.initLife = setting.life || 5;
+            this.life = this.initLife;
+            this.lifeEle = document.querySelector(".life span");
+            this.num = setting.num || 3;
+            this.status = true;
+            this._init();
+        }
+
+        _init() {
+            this.obj = {};
+            clearInterval(this.t);
+            this.score = 0;
+            this.scoreEle.innerHTML = this.score;
+            this.level = 1;
+            this.levelEle.innerHTML = this.level;
+            this.life = this.initLife;
+            this.lifeEle.innerHTML = this.initLife;
+            this.sence.innerHTML = "";
+        }
+
+        _creatLetter() {
+            let newItem = document.createElement("div");
+            newItem.classList.add("letter");
+            this.sence.appendChild(newItem);
+            do {
+                var randomNumber = Math.floor(Math.random() * 26 + 65);
+                var randomLetter = String.fromCharCode(randomNumber);
+            } while (this.obj[randomLetter]);
+            newItem.style.backgroundImage = "url(./images/" + randomLetter + ".png)";
+            do {
+                var randomLeft = Math.floor(Math.random() * (this.senceWidth - 100));
+            } while (this._checkLeft(randomLeft));
+            let randomTop = -Math.floor(Math.random() * 100);
+            newItem.style.left = randomLeft + "px";
+            newItem.style.top = randomTop + "px";
+            this.obj[randomLetter] = {left: randomLeft, top: randomTop, ele: newItem};
+        };
+
+        _checkLeft(newLeft) {
+            for (let i in this.obj) {
+                if (newLeft > this.obj[i].left - 100 && newLeft < this.obj[i].left + 100) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        start() {
+            if (this.status) {
+                for (let i = 0; i < this.num; i++) {
+                    this._creatLetter();
+                }
+                this._falldown();
+                this._keydown();
+            }
+            this.status = false;
+        }
+
+        _falldown() {
+            this.t = setInterval(this._move.bind(this), 50);
+        };
+
+        _levelUp() {
+            if (this.score % 20 === 0) {
+                this.speed++;
+                this.level++;
+                this.levelEle.innerHTML = this.level;
+            }
+        }
+
+        _move() {
+            for (let i in this.obj) {
+                let top = this.obj[i].top;
+                top += this.speed;
+                this.obj[i].ele.style.top = top + "px";
+                this.obj[i].top = top;
+                if (top >= window.innerHeight) {
+                    this.sence.removeChild(this.obj[i].ele);
+                    delete this.obj[i];
+                    this._creatLetter();
+                    this.life--;
+                    this.lifeEle.innerHTML = this.life;
+                    if (this.life <= 0) {
+                        setTimeout(function () {
+                            this.gg();
+                        }.bind(this), 20)
+
+                    }
+                }
+            }
+        }
+
+        gg() {
+
+            alert(`当前得分为${this.score}，是否重新开始`);
+            this._init();
+            this.status = true;
+            clearInterval(this.t);
+        }
+
+        _keydown() {
+            document.onkeydown = function (e) {
+                let key = e.keyCode;
+                let Letter = String.fromCharCode(key);
+                if (this.obj[Letter]) {
+                    this.sence.removeChild(this.obj[Letter].ele);
+                    delete this.obj[Letter];
+                    this._creatLetter();
+                    this.score++;
+                    this.scoreEle.innerHTML = this.score;
+                    this._levelUp();
+                }
+            }.bind(this);
+        }
+    }
+    let diffObjs=document.querySelectorAll(".diffbtn");
+    let startObj = document.querySelector("#start");
+    let pauseObj = document.querySelector("#pause");
+    let overObj = document.querySelector("#over");
+    let easyObj=document.querySelector("#easy");
+    let mediumObj=document.querySelector("#medium");
+    let hardObj=document.querySelector("#hard");
+    let hellObj=document.querySelector("#hell");
+    let easy = {life: 5, speed: 3, num: 3};
+    let medium = {life: 3, speed: 4, num: 4};
+    let hard = {life: 3, speed: 5, num: 5};
+    let hell = {life: 1, speed: 8, num: 5};
+    let game = new Game(easy);
+    let flag = true;
+    startObj.onclick = function () {
+        game.start();
+    };
+    pauseObj.onclick = function () {
+        if (!game.status) {
+            if (flag) {
+                clearInterval(game.t);
+                flag = false;
+                pauseObj.value = "继续";
+            } else {
+                game._falldown();
+                flag = true;
+                pauseObj.value = "暂停";
+            }
+        }
+    };
+    overObj.onclick = function () {
+        if (!game.status&&confirm("确定退出吗？")) {
+            history.go(0);
+        }
+    };
+    diffObjs.forEach(function(ele,index){
+        ele.onclick=function(){
+            for(let i=0;i<diffObjs.length;i++){
+                diffObjs[i].classList.remove("selected");
+            }
+            ele.classList.add("selected");
+        }
+    })
+</script>
+</html>
