@@ -27,21 +27,25 @@
             position: relative;
 
         }
-        .score{
+
+        .score {
             background-image: url(images/scor.png);
             background-repeat: no-repeat;
-            background-position: 43px 21px ;
+            background-position: 43px 21px;
         }
-        .level{
+
+        .level {
             background-image: url(images/scor.png);
             background-repeat: no-repeat;
-            background-position: 43px 21px ;
+            background-position: 43px 21px;
         }
-        .life{
+
+        .life {
             background-image: url(images/life.png);
             background-repeat: no-repeat;
-            background-position: 26px 28px ;
+            background-position: 26px 28px;
         }
+
         .control {
             width: 20%;
             height: 100%;
@@ -73,12 +77,21 @@
             -ms-user-select: none;
             user-select: none;
             cursor: default;
+            position: relative;
+
         }
 
         .blank span {
             display: inline-block;
             width: 100px;
             margin-left: 67px;
+        }
+
+        .blank b {
+            position: absolute;
+            top: 32px;
+            left: 62px;
+            font-size: 22px;
         }
 
         .control > input {
@@ -94,7 +107,7 @@
         .diff {
             width: 100%;
             display: flex;
-            justify-content: space-evenly;
+            justify-content: space-around;
         }
 
         .diff input {
@@ -108,27 +121,31 @@
             outline: none;
             border: 1px solid #fff;
         }
-        .over{
+
+        .over {
             position: absolute;
-            left:0;
-            top:0;
-            right:0;
-            bottom:0;
-            margin:auto;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
             width: 400px;
             height: 240px;
-            background-color: rgba(0, 165, 196, 0.72);
-            z-index:999;
+            background-color: rgba(0, 0, 0, 0.77);
+            z-index: 999;
             box-sizing: border-box;
             padding: 20px 40px;
             display: none;
+            color: #fff
         }
-        .over h2{
+
+        .over h2 {
             text-align: center;
             font-weight: 700;
             font-size: 20px;
         }
-        .over input{
+
+        .over input {
             display: block;
             margin: 50px 30px;
             width: 100px;
@@ -139,12 +156,13 @@
             float: left;
 
         }
-        .cover{
+
+        .cover {
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.58);
             position: absolute;
-            z-index:998;
+            z-index: 998;
             display: none;
         }
     </style>
@@ -160,7 +178,7 @@
     </div>
     <div class="control">
         <div class="score blank"><span></span></div>
-        <div class="level blank"><span></span></div>
+        <div class="level blank"><b>Lv</b><span></span></div>
         <div class="life blank"><span></span></div>
         <input type="button" value="开始" id="start">
         <input type="button" value="暂停" id="pause">
@@ -190,11 +208,11 @@
             this.num = setting.num || 3;
             this.status = true;
             this._init();
-            this.sum=0;
-            this.overSence=document.querySelector(".over");
-            this.restartBtn=document.querySelector("#restart");
-            this.exitBtn=document.querySelector("#exit");
-            this.cover=document.querySelector(".cover");
+            this.sum = 0;
+            this.overSence = document.querySelector(".over");
+            this.restartBtn = document.querySelector("#restart");
+            this.exitBtn = document.querySelector("#exit");
+            this.cover = document.querySelector(".cover");
         }
 
         changeDiff(diff) {
@@ -205,7 +223,7 @@
         }
 
         _init() {
-            this.sum=0;
+            this.sum = 0;
             this.obj = {};
             clearInterval(this.t);
             this.score = 0;
@@ -254,7 +272,7 @@
                 this._keydown();
             }
             this.status = false;
-            this.restartBtn.onclick=null;
+            this.restartBtn.onclick = null;
         }
 
         _falldown() {
@@ -282,6 +300,7 @@
                     this.life--;
                     this.lifeEle.innerHTML = this.life;
                     if (this.life <= 0) {
+                        this.life = 0;
                         setTimeout(function () {
                             this.gg();
                         }.bind(this), 20)
@@ -290,31 +309,33 @@
                 }
             }
         }
+
         gg() {
-            let radio=Math.round(this.score/this.sum*10000)/100;
-            if(!radio){
-                radio=0;
+            let radio = Math.round(this.score / this.sum * 10000) / 100;
+            if (!radio) {
+                radio = 0;
             }
-            this.overSence.style.display="block";
-            this.cover.style.display="block";
-            this.overSence.firstElementChild.innerHTML=`当前得分为${this.score}，正确率为${radio}%，是否重新开始?`;
+            this.overSence.style.display = "block";
+            this.cover.style.display = "block";
+            this.overSence.firstElementChild.innerHTML = `当前得分为${this.score}，正确率为${radio}%，是否重新开始?`;
             clearInterval(this.t);
-            this.restartBtn.onclick=function(){
-                this.overSence.style.display="none";
-                this.cover.style.display="none";
+            this.restartBtn.onclick = function () {
+                this.overSence.style.display = "none";
+                this.cover.style.display = "none";
                 this._init();
             }.bind(this);
-            this.exitBtn.onclick=function(){
+            this.exitBtn.onclick = function () {
                 history.go(0);
             }.bind(this);
             this.status = true;
         }
+
         _keydown() {
             document.onkeydown = function (e) {
                 this.sum++;
                 let key = e.keyCode;
                 let Letter = String.fromCharCode(key);
-                if (this.obj[Letter]&&flag) {
+                if (this.obj[Letter] && flag) {
                     this.sence.removeChild(this.obj[Letter].ele);
                     delete this.obj[Letter];
                     this._creatLetter();
@@ -360,7 +381,7 @@
             history.go(0);
         }
     };
-    diffObjs.forEach(function (ele, index) {
+    diffObjs.forEach(function (ele) {
         ele.onclick = function () {
             if (game.status) {
                 for (let i = 0; i < diffObjs.length; i++) {
